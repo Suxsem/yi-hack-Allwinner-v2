@@ -55,7 +55,7 @@ init_config()
         fi
 
         if [[ $(get_config RTSP_ALT) == "yes" ]] ; then
-            RTSP_DAEMON="rtsp_server_yi"
+            RTSP_DAEMON="go2rtc"
         fi
 
         if [[ "$RTSP_AUDIO_COMPRESSION" == "none" ]] ; then
@@ -65,7 +65,7 @@ init_config()
             RTSP_AUDIO_COMPRESSION="-a "$RTSP_AUDIO_COMPRESSION
         fi
         if [ ! -z $RTSP_PORT ]; then
-            RTSP_PORT="-p "$RTSP_PORT
+            RTSP_PORT_O="-p "$RTSP_PORT
         fi
         if [ ! -z $USERNAME ]; then
             RTSP_USER="-u "$USERNAME
@@ -113,24 +113,10 @@ start_rtsp()
         RTSP_AUDIO_COMPRESSION="-a "$2
     fi
 
-    if [[ $RTSP_RES == "low" ]]; then
-        if [ "$RTSP_ALT" == "yes" ]; then
-            h264grabber -m $MODEL_SUFFIX -r low $H264GRABBER_AUDIO -f &
-            sleep 1
-        fi
-        $RTSP_DAEMON -m $MODEL_SUFFIX -r low $RTSP_AUDIO_COMPRESSION $RTSP_PORT $RTSP_USER $RTSP_PASSWORD $B_ONVIF_AUDIO_BC &
-    elif [[ $RTSP_RES == "high" ]]; then
-        if [ "$RTSP_ALT" == "yes" ]; then
-            h264grabber -m $MODEL_SUFFIX -r high $H264GRABBER_AUDIO -f &
-            sleep 1
-        fi
-        $RTSP_DAEMON -m $MODEL_SUFFIX -r high $RTSP_AUDIO_COMPRESSION $RTSP_PORT $RTSP_USER $RTSP_PASSWORD $B_ONVIF_AUDIO_BC &
-    elif [[ $RTSP_RES == "both" ]]; then
-        if [ "$RTSP_ALT" == "yes" ]; then
-            h264grabber -m $MODEL_SUFFIX -r both $H264GRABBER_AUDIO -f &
-            sleep 1
-        fi
-        $RTSP_DAEMON -m $MODEL_SUFFIX -r both $RTSP_AUDIO_COMPRESSION $RTSP_PORT $RTSP_USER $RTSP_PASSWORD $B_ONVIF_AUDIO_BC &
+	if [ "$RTSP_ALT" == "yes" ]; then
+		$RTSP_DAEMON -c "{\"api\":{\"listen\":\"\"},\"webrtc\":{\"listen\":\"\"},\"rtsp\":{\"listen\":\":$RTSP_PORT\",\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"},\"streams\":{\"ch0_0.h264\":[\"exec:h264grabber -m $MODEL_SUFFIX -r $RTSP_RES $H264GRABBER_AUDIO\"]}}" &
+	else
+		$RTSP_DAEMON -m $MODEL_SUFFIX -r $RTSP_RES $RTSP_AUDIO_COMPRESSION $RTSP_PORT_O $RTSP_USER $RTSP_PASSWORD $B_ONVIF_AUDIO_BC &
     fi
 
     WD_COUNT=$(ps | grep wd_rtsp.sh | grep -v grep | grep -c ^)
