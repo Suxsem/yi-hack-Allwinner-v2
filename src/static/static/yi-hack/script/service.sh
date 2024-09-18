@@ -50,7 +50,7 @@ init_config()
     if [[ $(get_config RTSP) == "yes" ]] ; then
         RTSP_DAEMON="rRTSPServer"
         RTSP_AUDIO_COMPRESSION=$(get_config RTSP_AUDIO)
-        if [ "$RTSP_AUDIO" == "aac" ]; then
+        if [ "$RTSP_AUDIO_COMPRESSION" == "aac" ]; then
             H264GRABBER_AUDIO="-a"
         fi
 
