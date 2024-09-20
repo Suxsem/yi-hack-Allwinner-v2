@@ -52,6 +52,7 @@ init_config()
         RTSP_AUDIO_COMPRESSION=$(get_config RTSP_AUDIO)
         if [ "$RTSP_AUDIO_COMPRESSION" == "aac" ]; then
             H264GRABBER_AUDIO="-a"
+            GO2RTC_AUDIO=",\"exec:h264grabber -m $MODEL_SUFFIX -r NONE $H264GRABBER_AUDIO\""
         fi
 
         if [[ $(get_config RTSP_ALT) == "yes" ]] ; then
@@ -108,13 +109,14 @@ start_rtsp()
     fi
     if [ "$2" == "aac" ]; then
         H264GRABBER_AUDIO="-a"
+        GO2RTC_AUDIO=",\"exec:h264grabber -m $MODEL_SUFFIX -r NONE $H264GRABBER_AUDIO\""
     fi
     if [ "$2" == "no" ] || [ "$2" == "yes" ] || [ "$2" == "alaw" ] || [ "$2" == "ulaw" ] || [ "$2" == "pcm" ] || [ "$2" == "aac" ] ; then
         RTSP_AUDIO_COMPRESSION="-a "$2
     fi
 
 	if [ "$RTSP_ALT" == "yes" ]; then
-		$RTSP_DAEMON -c "{\"api\":{\"listen\":\"\"},\"webrtc\":{\"listen\":\"\"},\"rtsp\":{\"listen\":\":$RTSP_PORT\",\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"},\"streams\":{\"ch0_0.h264\":[\"exec:h264grabber -m $MODEL_SUFFIX -r $RTSP_RES $H264GRABBER_AUDIO\"]}}" &
+		$RTSP_DAEMON -c "{\"api\":{\"listen\":\"\"},\"webrtc\":{\"listen\":\"\"},\"rtsp\":{\"listen\":\":$RTSP_PORT\",\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"},\"streams\":{\"ch0_0.h264\":[\"exec:h264grabber -m $MODEL_SUFFIX -r $RTSP_RES\"$GO2RTC_AUDIO]}}" &
 	else
 		$RTSP_DAEMON -m $MODEL_SUFFIX -r $RTSP_RES $RTSP_AUDIO_COMPRESSION $RTSP_PORT_O $RTSP_USER $RTSP_PASSWORD $B_ONVIF_AUDIO_BC &
     fi
